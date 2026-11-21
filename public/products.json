@@ -1,0 +1,133 @@
+{
+  "_nota": "Fișier ușor de editat. Pentru fiecare produs: name, category, dimensions, price (număr, în lei; null = „Preț la cerere”), images (listă de poze, prima = cardul, a doua = hover), description. Categorii: casute | cuburi | placi | garaje | fructe. Dimensiunile și prețurile de aici sunt PROVIZORII – de verificat cu clientul (priceVerified: false).",
+  "categories": [
+    { "id": "all", "label": "Toate" },
+    { "id": "casute", "label": "Căsuțe" },
+    { "id": "cuburi", "label": "Cuburi" },
+    { "id": "placi", "label": "Plăci cu activități" },
+    { "id": "garaje", "label": "Garaje" },
+    { "id": "fructe", "label": "Fructe & legume" }
+  ],
+  "products": [
+    {
+      "id": "casuta-mica",
+      "name": "Căsuță de joacă – mică",
+      "category": "casute",
+      "dimensions": "TODO: de confirmat (ex. 60 × 50 × 70 cm)",
+      "price": null,
+      "priceVerified": false,
+      "images": ["/img/products/casuta-mica-1.svg", "/img/products/casuta-mica-2.svg"],
+      "description": "Căsuță din lemn cu ușă, ferestre și acoperiș, potrivită pentru cei mici. Numele copilului se gravează sau se pictează gratuit pe fațadă."
+    },
+    {
+      "id": "casuta-medie",
+      "name": "Căsuță de joacă – medie",
+      "category": "casute",
+      "dimensions": "TODO: de confirmat (ex. 80 × 65 × 90 cm)",
+      "price": null,
+      "priceVerified": false,
+      "images": ["/img/products/casuta-medie-1.svg", "/img/products/casuta-medie-2.svg"],
+      "description": "Mai spațioasă, pentru povești lungi și jocuri în doi. Lemn șlefuit fin, vopsele sigure pentru copii, colțuri rotunjite."
+    },
+    {
+      "id": "casuta-mare",
+      "name": "Căsuță de joacă – mare",
+      "category": "casute",
+      "dimensions": "TODO: de confirmat (ex. 110 × 90 × 120 cm)",
+      "price": null,
+      "priceVerified": false,
+      "images": ["/img/products/casuta-mare-1.svg", "/img/products/casuta-mare-2.svg"],
+      "description": "Căsuța cea mare, în care încap și prietenii. Se livrează demontată, cu instrucțiuni simple de asamblare."
+    },
+    {
+      "id": "cub-simplu",
+      "name": "Cub simplu",
+      "category": "cuburi",
+      "dimensions": "TODO: de confirmat",
+      "price": null,
+      "priceVerified": false,
+      "images": ["/img/products/cub-simplu-1.svg", "/img/products/cub-simplu-2.svg"],
+      "description": "Cubul clasic din lemn, cu numele copilului pe una dintre fețe. Un cadou simplu și de neuitat."
+    },
+    {
+      "id": "cub-dublu",
+      "name": "Cub dublu",
+      "category": "cuburi",
+      "dimensions": "TODO: de confirmat",
+      "price": null,
+      "priceVerified": false,
+      "images": ["/img/products/cub-dublu-1.svg", "/img/products/cub-dublu-2.svg"],
+      "description": "Două cuburi unite, cu mai mult spațiu pentru nume, litere sau cifre. Bun și pentru fotografii de bebeluș."
+    },
+    {
+      "id": "cub-usi",
+      "name": "Cub cu uși",
+      "category": "cuburi",
+      "dimensions": "TODO: de confirmat",
+      "price": null,
+      "priceVerified": false,
+      "images": ["/img/products/cub-usi-1.svg", "/img/products/cub-usi-2.svg"],
+      "description": "Cub cu uși care se deschid și se închid, cu surprize ascunse înăuntru. Numele copilului este gratuit."
+    },
+    {
+      "id": "placa-mica",
+      "name": "Placă cu activități – mică",
+      "category": "placi",
+      "dimensions": "TODO: de confirmat",
+      "price": null,
+      "priceVerified": false,
+      "images": ["/img/products/placa-mica-1.svg", "/img/products/placa-mica-2.svg"],
+      "description": "Busy board cu încuietori, roți, zăvoare și butoane care antrenează mâinile și atenția. Cu numele copilului sus."
+    },
+    {
+      "id": "placa-mare",
+      "name": "Placă cu activități – mare",
+      "category": "placi",
+      "dimensions": "TODO: de confirmat",
+      "price": null,
+      "priceVerified": false,
+      "images": ["/img/products/placa-mare-1.svg", "/img/products/placa-mare-2.svg"],
+      "description": "Versiunea extinsă, cu mai multe activități senzoriale și motrice. Se poate adapta după vârsta copilului."
+    },
+    {
+      "id": "garaj-1",
+      "name": "Garaj pentru mașinuțe – 1 nivel",
+      "category": "garaje",
+      "dimensions": "TODO: de confirmat",
+      "price": null,
+      "priceVerified": false,
+      "images": ["/img/products/garaj-1-1.svg", "/img/products/garaj-1-2.svg"],
+      "description": "Garaj din lemn cu rampă și loc pentru mașinuțele preferate. Numele copilului pe fronton."
+    },
+    {
+      "id": "garaj-2",
+      "name": "Garaj pentru mașinuțe – 2 nivele",
+      "category": "garaje",
+      "dimensions": "TODO: de confirmat",
+      "price": null,
+      "priceVerified": false,
+      "images": ["/img/products/garaj-2-1.svg", "/img/products/garaj-2-2.svg"],
+      "description": "Două nivele, rampă în spirală și parcări pentru o flotă întreagă. Pentru pasionații de mașinuțe."
+    },
+    {
+      "id": "fructe",
+      "name": "Set fructe din lemn",
+      "category": "fructe",
+      "dimensions": "TODO: de confirmat",
+      "price": null,
+      "priceVerified": false,
+      "images": ["/img/products/fructe-1.svg", "/img/products/fructe-2.svg"],
+      "description": "Fructe din lemn pictate de mână, perfecte pentru jocul de-a magazinul sau de-a bucătăria."
+    },
+    {
+      "id": "legume",
+      "name": "Set legume din lemn",
+      "category": "fructe",
+      "dimensions": "TODO: de confirmat",
+      "price": null,
+      "priceVerified": false,
+      "images": ["/img/products/legume-1.svg", "/img/products/legume-2.svg"],
+      "description": "Morcovi, roșii, ardei și multe altele, din lemn. Se potrivesc cu setul de fructe într-o coșuleț."
+    }
+  ]
+}

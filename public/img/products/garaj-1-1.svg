@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <rect width="800" height="600" fill="#E6F2FB"/>
+  <ellipse cx="400" cy="510" rx="230" ry="26" fill="#000" opacity=".12"/>
+  <g transform="translate(160 120)"><rect width="480" height="230" rx="14" fill="#E8C48B" stroke="#8B5E34" stroke-width="6"/>
+    <path d="M-20 0 L240 -90 L500 0Z" fill="#2A9DF4" stroke="#8B5E34" stroke-width="6" stroke-linejoin="round"/>
+    <rect x="70" y="90" width="340" height="140" rx="10" fill="#6b4a2b"/>
+    <rect x="120" y="160" width="110" height="46" rx="14" fill="#E63946"/><rect x="250" y="160" width="110" height="46" rx="14" fill="#FFC93C"/></g>
+  <text x="400" y="575" font-family="Arial,sans-serif" font-size="22" text-anchor="middle" fill="#8B5E34" opacity=".7">poză în curând</text>
+</svg>
