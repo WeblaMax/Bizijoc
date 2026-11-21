@@ -2,7 +2,7 @@ import { getWood } from '../three/wood'
 
 let productsPromise
 export function loadProducts() {
-  productsPromise ??= fetch('/products.json')
+  productsPromise ??= fetch(`${import.meta.env.BASE_URL}products.json`)
     .then((r) => {
       if (!r.ok) throw new Error('products.json')
       return r.json()
