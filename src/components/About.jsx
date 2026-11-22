@@ -1,14 +1,12 @@
 import { INSTAGRAM_URL, INSTAGRAM_HANDLE } from '../config'
-import { InstagramIcon } from './Icons'
+import { InstagramIcon, LogoTile } from './Icons'
 
 export default function About() {
   return (
     <section className="section section--warm" id="despre">
       <div className="wrap about">
         <div className="about__art" aria-hidden="true" data-reveal>
-          {['B', 'I', 'Z', 'I'].map((l, i) => (
-            <span key={i} className={`about__cube about__cube--${i}`}>{l}</span>
-          ))}
+          <LogoTile size={320} className="about__tile" />
         </div>
         <div className="about__copy" data-reveal>
           <p className="eyebrow">Despre noi</p>

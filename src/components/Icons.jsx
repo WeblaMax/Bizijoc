@@ -1,3 +1,5 @@
+import { LOGO_COLORS, TILE, SHAPES, HOLES, LACES, WORD, JOC } from './logoData'
+
 export function WhatsAppIcon({ size = 22 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" fill="currentColor">
@@ -16,21 +18,74 @@ export function InstagramIcon({ size = 20 }) {
   )
 }
 
-/** Logo: „BIZI” colorat + forme geometrice, pe fundal negru */
+const C = LOGO_COLORS
+
+/** Plăcuța din logo: forme geometrice înșirate pe un șiret galben */
+export function LogoTileParts() {
+  return (
+    <>
+      <rect data-part="tile" x={TILE.x} y={TILE.y} width={TILE.size} height={TILE.size} rx={TILE.r} fill={C.tile} stroke={C.tileEdge} strokeWidth="5" />
+      <g data-part="shape">
+        <polygon points={SHAPES.tri} fill={C.ink} stroke={C.ink} strokeWidth="13" strokeLinejoin="round" />
+        <polygon points={SHAPES.tri} fill={C.green} stroke={C.green} strokeWidth="9" strokeLinejoin="round" />
+      </g>
+      <g data-part="shape">
+        <polygon points={SHAPES.pent} fill={C.ink} stroke={C.ink} strokeWidth="13" strokeLinejoin="round" />
+        <polygon points={SHAPES.pent} fill={C.blue} stroke={C.blue} strokeWidth="9" strokeLinejoin="round" />
+      </g>
+      <g data-part="shape">
+        <polygon points={SHAPES.star} fill={C.yellow} stroke={C.ink} strokeWidth="2.2" />
+      </g>
+      <g data-part="shape">
+        <circle cx={SHAPES.circle.cx} cy={SHAPES.circle.cy} r={SHAPES.circle.r} fill={C.red} />
+      </g>
+      {HOLES.map(([x, y], i) => (
+        <circle key={i} data-part="hole" cx={x} cy={y} r="7.5" fill={C.ink} />
+      ))}
+      {LACES.map((d, i) => (
+        <g key={i} data-part="lace" fill="none" strokeLinecap="round">
+          <path d={d} stroke={C.ink} strokeWidth="9.5" pathLength="1" />
+          <path d={d} stroke={C.lace} strokeWidth="6" pathLength="1" />
+        </g>
+      ))}
+    </>
+  )
+}
+
+export function LogoWordParts() {
+  return (
+    <>
+      <g fill={C.blue} fillRule="evenodd">
+        {['B', 'I', 'Z', 'bang'].map((k) => (
+          <path key={k} data-part="letter" d={WORD[k]} />
+        ))}
+      </g>
+      <g data-part="joc" fill={C.green} fillRule="evenodd">
+        {['J', 'O', 'C'].map((k) => (
+          <path key={k} d={JOC[k]} />
+        ))}
+      </g>
+    </>
+  )
+}
+
+export function LogoTile({ size = 40, className = '' }) {
+  return (
+    <svg width={size} height={size} viewBox="420 145 440 440" aria-hidden="true" className={className}>
+      <LogoTileParts />
+    </svg>
+  )
+}
+
+/** Logo pe un rând (header, footer): plăcuța + BIZ!JOC */
 export function Logo({ height = 40 }) {
   return (
-    <svg height={height} viewBox="0 0 190 64" role="img" aria-label="BiziJoc" className="logo">
-      <rect width="190" height="64" rx="14" fill="#111" />
-      <circle cx="170" cy="14" r="6" fill="#FFC93C" />
-      <path d="M160 52 L172 52 L166 40Z" fill="#2A9DF4" />
-      <rect x="176" y="30" width="8" height="8" rx="2" fill="#E63946" />
-      <text x="16" y="47" fontFamily='"Fredoka Variable", system-ui, sans-serif' fontWeight="700" fontSize="42" letterSpacing="1">
-        <tspan fill="#E63946">B</tspan>
-        <tspan fill="#2A9DF4">I</tspan>
-        <tspan fill="#FFC93C">Z</tspan>
-        <tspan fill="#E63946">I</tspan>
-      </text>
-    </svg>
+    <span className="logo" role="img" aria-label="BiziJoc" style={{ height }}>
+      <LogoTile size={height} />
+      <svg height={height * 0.72} viewBox="430 600 425 232" aria-hidden="true">
+        <LogoWordParts />
+      </svg>
+    </span>
   )
 }
 
@@ -47,7 +102,7 @@ export const icons = {
   ),
   truck: (
     <svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 12h26v22H4zM30 20h9l5 7v7H30z" /><circle cx="14" cy="36" r="4" fill="var(--cream)" /><circle cx="37" cy="36" r="4" fill="var(--cream)" />
+      <path d="M4 12h26v22H4zM30 20h9l5 7v7H30z" /><circle cx="14" cy="36" r="4" fill="var(--ic-bg)" /><circle cx="37" cy="36" r="4" fill="var(--ic-bg)" />
     </svg>
   ),
   chat: (

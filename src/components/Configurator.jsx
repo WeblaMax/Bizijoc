@@ -7,9 +7,10 @@ import { hasWebGL } from '../lib/webgl'
 const NameScene = lazy(() => import('../three/NameScene'))
 
 export const COLORS = [
-  { id: 'rosu', label: 'roșu', hex: '#E63946' },
-  { id: 'albastru', label: 'albastru', hex: '#2A9DF4' },
-  { id: 'galben', label: 'galben', hex: '#FFC93C' },
+  { id: 'albastru', label: 'albastru', hex: '#5FC3E8' },
+  { id: 'verde', label: 'verde', hex: '#A9D05F' },
+  { id: 'galben', label: 'galben', hex: '#F2D64B' },
+  { id: 'rosu', label: 'roșu', hex: '#EE4747' },
   { id: 'nuc', label: 'nuc', hex: '#5A3418' },
   { id: 'crem', label: 'alb', hex: '#FFF8EA' },
 ]

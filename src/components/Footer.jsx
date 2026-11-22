@@ -8,7 +8,7 @@ export default function Footer() {
     <footer className="footer" id="contact">
       <div className="wrap footer__in">
         <div>
-          <Logo height={44} />
+          <Logo height={48} />
           <p className="footer__tag">Jucării din lemn personalizate, lucrate de mână.</p>
         </div>
         <div className="footer__col">

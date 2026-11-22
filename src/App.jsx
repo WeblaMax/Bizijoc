@@ -4,14 +4,12 @@ import Hero from './components/Hero'
 import Trust from './components/Trust'
 import Configurator from './components/Configurator'
 import Products from './components/Products'
-import Offer, { offerActive } from './components/Offer'
 import About from './components/About'
 import HowTo from './components/HowTo'
 import Footer from './components/Footer'
 import FloatingWA from './components/FloatingWA'
 import { introSeen } from './lib/storage'
 import { prefersReducedMotion } from './lib/hooks'
-import { hasWebGL } from './lib/webgl'
 import { preloadAssets, loadProducts } from './lib/loader'
 import { initScroll, startScroll, stopScroll, gsap, ScrollTrigger } from './lib/scroll'
 
@@ -19,7 +17,7 @@ const Intro = lazy(() => import('./components/Intro'))
 
 function decideMode() {
   const force = new URLSearchParams(location.search).get('intro') === '1'
-  if (prefersReducedMotion() || !hasWebGL()) return 'none' // variantă statică
+  if (prefersReducedMotion()) return 'none'
   if (!force && introSeen()) return 'none' // doar la prima vizită
   return 'intro'
 }
@@ -29,7 +27,6 @@ export default function App() {
   const [phase, setPhase] = useState(mode === 'intro' ? 'playing' : 'done') // playing → revealing → done
   const [ready, setReady] = useState(false)
   const progress = useRef(0)
-  const showOffer = offerActive()
 
   // smooth scroll + reveal-uri la scroll
   useEffect(() => {
@@ -56,7 +53,7 @@ export default function App() {
     }
   }, [phase])
 
-  // preloader: încarcă resursele cu progres raportat în cub
+  // preloader: resursele se încarcă în timpul introului
   useEffect(() => {
     if (mode !== 'intro') return
     preloadAssets(progress)
@@ -74,13 +71,12 @@ export default function App() {
 
   return (
     <>
-      <Header showOffer={showOffer} />
+      <Header />
       <main>
         <Hero live={phase !== 'playing'} ready={ready} />
         <Trust />
         <Configurator />
         <Products />
-        <Offer />
         <About />
         <HowTo />
       </main>

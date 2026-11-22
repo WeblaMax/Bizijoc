@@ -3,7 +3,7 @@ import { Logo, WhatsAppIcon } from './Icons'
 import { waLink, DEFAULT_MSG } from '../lib/wa'
 import { scrollToId } from '../lib/scroll'
 
-export default function Header({ showOffer }) {
+export default function Header() {
   const [solid, setSolid] = useState(false)
   const [open, setOpen] = useState(false)
 
@@ -22,7 +22,6 @@ export default function Header({ showOffer }) {
   const links = [
     ['numele-tau', 'Numele tău 3D'],
     ['produse', 'Produse'],
-    ...(showOffer ? [['oferta', 'Oferta de Crăciun']] : []),
     ['despre', 'Despre noi'],
     ['contact', 'Contact'],
   ]
@@ -31,7 +30,7 @@ export default function Header({ showOffer }) {
     <header className={`header ${solid || open ? 'is-solid' : ''}`}>
       <div className="header__in">
         <a href="#top" className="header__logo" onClick={go('top')} aria-label="BiziJoc – acasă">
-          <Logo height={38} />
+          <Logo height={44} />
         </a>
         <nav className={`nav ${open ? 'is-open' : ''}`} aria-label="Principal">
           {links.map(([id, label]) => (

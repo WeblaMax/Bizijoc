@@ -25,25 +25,28 @@ Fiecare produs: `id`, `name`, `category` (`casute` · `cuburi` · `garaje` · `b
 a doua = la hover), `description`. Cardurile, filtrele și modalul se construiesc automat.
 Prețul apare ca „de la X lei”. Moneda se schimbă în `src/config.js` (`CURRENCY`).
 
-## Oferta „Prețurile de Crăciun”
+## Design
 
-Se editează în `src/config.js` (`OFFER`). Se ascunde singură după `hideAfter`, sau pune `enabled: false`.
-Ca s-o scoți definitiv: șterge `<Offer />` din `src/App.jsx`.
+* temă întunecată mată: grafit cald `#1F1E1C` (nu negru pur), text crem; culorile de accent sunt cele din logo
+  (albastru, verde, galben, roșu). Toate culorile sunt variabile în `:root` din `src/styles.css`;
+* logo-ul (plăcuța cu forme + BIZ!JOC) e în `src/components/logoData.js` (literele vectorizate din logo-ul original)
+  și se folosește în header, footer, „Despre noi”, favicon și intro.
 
-## Intro 3D
+## Intro cu logo-ul
 
+* plăcuța cade și sare, formele se așază pe rând, șiretul se înșiră, apoi apar BIZ! și JOC (~4,5 s);
 * rulează doar la prima vizită (`localStorage`, cu try/catch); „Sari peste →” e vizibil de la început;
 * `prefers-reduced-motion` ⇒ fără intro, hero static (fără rotație/Lenis);
-* fără WebGL ⇒ fallback 2D;
-* pentru a-l vedea din nou: `/?intro=1` sau linkul „Vezi din nou animația” din footer.
-* Secvența și timpii sunt în `src/three/IntroScene.jsx` (funcția `start`, timeline GSAP).
+* servește și ca preloader: la final așteaptă resursele (maxim 9 s);
+* pentru a-l vedea din nou: `/?intro=1` sau linkul „Vezi din nou animația” din footer;
+* secvența și timpii sunt în `src/components/Intro.jsx` (timeline GSAP).
 
 ## Performanță (mobil)
 
 * lemnul (albedo + normal map) e generat procedural la runtime, 512 px, o singură dată – fără descărcări;
 * fără shadow maps (umbre „blob”), dpr limitat la 1.5 pe touch, scade la 1 dacă FPS < 40;
 * canvasurile (hero, configurator) se opresc când nu sunt în ecran; `three` e într-un chunk separat,
-  încărcat leneș; introul nu se descarcă deloc pentru vizitatorii care l-au văzut deja.
+  încărcat leneș; introul (SVG, fără 3D) nu se descarcă deloc pentru vizitatorii care l-au văzut deja.
 
 ## Publicare (GitHub Pages)
 
