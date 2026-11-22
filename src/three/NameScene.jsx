@@ -4,7 +4,6 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import gsap from 'gsap'
 import { Lights, Shadow } from './House'
 import { birchTextures, plyEdgeTextures } from './plywood'
-import { FONT } from './letters'
 import { maxDpr } from '../lib/hooks'
 
 // două scânduri de placaj, una peste alta, cu numele decupat și lipit peste ele
@@ -15,9 +14,11 @@ const LETTER_D = 0.07 // grosimea literelor decupate
 const EDGE_LAYERS = 9
 const BURNT = '#3b2415'
 
-function fitFont(g, text) {
-  let fs = 240
-  g.font = `700 ${fs}px ${FONT}`
+const fontCss = (font, fs) => `${font.weight} ${fs}px ${font.family}`
+
+function fitFont(g, text, font) {
+  let fs = font.size
+  g.font = fontCss(font, fs)
   const w = g.measureText(text).width
   const maxW = CW * 0.9
   if (w > maxW) fs = Math.floor((fs * maxW) / w)
@@ -25,15 +26,15 @@ function fitFont(g, text) {
 }
 
 /** mască albă pe negru (forma literelor) + umbra lor de contact pe lemn */
-function drawName(mask, shadow, name) {
+function drawName(mask, shadow, name, font) {
   const text = name || ' '
   const m = mask.getContext('2d')
   const sh = shadow.getContext('2d')
-  const fs = fitFont(m, text)
+  const fs = fitFont(m, text, font)
   const cy = CH / 2 + fs * 0.04
   m.fillStyle = '#000'
   m.fillRect(0, 0, CW, CH)
-  m.font = `700 ${fs}px ${FONT}`
+  m.font = fontCss(font, fs)
   m.textAlign = 'center'
   m.textBaseline = 'middle'
   m.fillStyle = '#fff'
@@ -84,7 +85,7 @@ function Screw({ x, y }) {
   )
 }
 
-function Plaque({ name, color, reduced }) {
+function Plaque({ name, color, font, reduced }) {
   const group = useRef()
   const { camera, size } = useThree()
   const [fontTick, setFontTick] = useState(0)
@@ -128,25 +129,25 @@ function Plaque({ name, color, reduced }) {
   useEffect(() => {
     let live = true
     document.fonts
-      ?.load(`700 120px ${FONT}`, name || 'Aa')
+      ?.load(fontCss(font, 120), name || 'Aa')
       .then(() => live && setFontTick((n) => n + 1))
       .catch(() => {})
     return () => {
       live = false
     }
-  }, [name])
+  }, [name, font])
 
   useEffect(() => {
-    drawName(mask, shadow, name)
+    drawName(mask, shadow, name, font)
     maskTex.needsUpdate = true
     shadowTex.needsUpdate = true
-  }, [name, fontTick, mask, shadow, maskTex, shadowTex])
+  }, [name, font, fontTick, mask, shadow, maskTex, shadowTex])
 
   // mică „săritură” la fiecare schimbare
   useEffect(() => {
     if (reduced || !group.current) return
     gsap.fromTo(group.current.scale, { x: 1.05, y: 1.05, z: 1.05 }, { x: 1, y: 1, z: 1, duration: 0.5, ease: 'elastic.out(1,0.45)', overwrite: true })
-  }, [name, color, reduced])
+  }, [name, color, font, reduced])
 
   useEffect(() => {
     const aspect = size.width / size.height
@@ -204,7 +205,7 @@ function Plaque({ name, color, reduced }) {
   )
 }
 
-export default function NameScene({ name, color, active, reduced }) {
+export default function NameScene({ name, color, font, active, reduced }) {
   return (
     <Canvas
       frameloop={active ? 'always' : 'never'}
@@ -215,7 +216,7 @@ export default function NameScene({ name, color, active, reduced }) {
       aria-label="Previzualizare 3D a numelui gravat"
     >
       <Lights interior={false} />
-      <Plaque name={name} color={color} reduced={reduced} />
+      <Plaque name={name} color={color} font={font} reduced={reduced} />
     </Canvas>
   )
 }

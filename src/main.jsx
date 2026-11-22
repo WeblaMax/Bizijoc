@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client'
 import '@fontsource-variable/fredoka'
 import '@fontsource-variable/nunito'
+import '@fontsource/courgette'
 import './styles.css'
 import App from './App'
 
