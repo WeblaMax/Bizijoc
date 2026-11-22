@@ -1,0 +1,92 @@
+{
+  "_nota": "Fișier ușor de editat. Pentru fiecare produs: name, category, dimensions, price (număr, în lei; null = „Preț la cerere”), images (listă de poze; prima apare pe card, a doua la hover), description. Categorii: casute | cuburi | garaje | bucatarii. Dimensiunile și prețurile sunt de completat (priceVerified: false).",
+  "categories": [
+    { "id": "all", "label": "Toate" },
+    { "id": "casute", "label": "Căsuțe" },
+    { "id": "cuburi", "label": "Cuburi" },
+    { "id": "garaje", "label": "Garaje" },
+    { "id": "bucatarii", "label": "Bucătării" }
+  ],
+  "products": [
+    {
+      "id": "casuta-aaron",
+      "name": "Căsuța Aaron",
+      "category": "casute",
+      "dimensions": "TODO: de confirmat",
+      "price": null,
+      "priceVerified": false,
+      "images": ["img/products/casuta-aaron-1.webp"],
+      "description": "Căsuță cu activități, cu acoperiș gri: alfabet, curcubeu cu nori și mărgele, soare, lună, stele și sonerie. Pe laterale are uși cu încuietori, zăvoare și multe alte activități. Numele copilului este decupat și pictat pe fațadă."
+    },
+    {
+      "id": "casuta-activitati",
+      "name": "Căsuța cu activități",
+      "category": "casute",
+      "dimensions": "TODO: de confirmat",
+      "price": null,
+      "priceVerified": false,
+      "images": ["img/products/casuta-activitati-1.webp"],
+      "description": "Căsuță mare din lemn natural, cu fructe, forme și cifre colorate pe acoperiș. Are tub, telefon, cronometru, sonerie, încuietoare cu cheie, roți dințate și multe alte activități care dezvoltă motricitatea fină."
+    },
+    {
+      "id": "casuta-alfabet",
+      "name": "Căsuța Alfabet",
+      "category": "casute",
+      "dimensions": "TODO: de confirmat",
+      "price": null,
+      "priceVerified": false,
+      "images": ["img/products/casuta-alfabet-1.webp"],
+      "description": "Căsuță cu alfabetul complet pe acoperiș, cu litere care se scot și se pun la loc. Are ceas, ușiță, cifre, spinner, șiret de legat și alte activități pentru primii pași în învățare."
+    },
+    {
+      "id": "casuta-forme",
+      "name": "Căsuța cu forme",
+      "category": "casute",
+      "dimensions": "TODO: de confirmat",
+      "price": null,
+      "priceVerified": false,
+      "images": ["img/products/casuta-forme-1.webp"],
+      "description": "Căsuță cu forme geometrice colorate pe acoperiș: stea, triunghi, pentagon, cerc, pătrat și altele. Pe laterale are roți dințate, nor cu mărgele, încuietoare cu cheie și roată. Numele copilului se pune gratuit."
+    },
+    {
+      "id": "casuta-milana",
+      "name": "Căsuța Milana",
+      "category": "casute",
+      "dimensions": "TODO: de confirmat",
+      "price": null,
+      "priceVerified": false,
+      "images": ["img/products/casuta-milana-1.webp"],
+      "description": "Căsuță cu ușițe colorate, balamale, cârlig și zăvor, clopoțel și forme geometrice pe acoperiș. Numele copilului este decupat și pictat deasupra ușii."
+    },
+    {
+      "id": "cub-activitati",
+      "name": "Cubul cu activități",
+      "category": "cuburi",
+      "dimensions": "TODO: de confirmat",
+      "price": null,
+      "priceVerified": false,
+      "images": ["img/products/cub-activitati-1.webp"],
+      "description": "Cub compact din lemn, cu activități pe toate fețele: tambur care se rotește, roți dințate, disc cu forme, ușiță cu balama și zăvor, buburuză. Numele copilului pe partea de sus."
+    },
+    {
+      "id": "garaj-artur",
+      "name": "Garajul Artur",
+      "category": "garaje",
+      "dimensions": "TODO: de confirmat",
+      "price": null,
+      "priceVerified": false,
+      "images": ["img/products/garaj-artur-1.webp"],
+      "description": "Parcare pe mai multe niveluri, cu rampe, locuri pentru mașinuțe și semafor colorat. Numele copilului apare sus, pe firmă."
+    },
+    {
+      "id": "bucatarie",
+      "name": "Bucătăria de joacă",
+      "category": "bucatarii",
+      "dimensions": "TODO: de confirmat",
+      "price": null,
+      "priceVerified": false,
+      "images": ["img/products/bucatarie-1.webp"],
+      "description": "Bucătărie din lemn cu chiuvetă din inox, robinet, plite, cuptor cu ușă, cuptor cu microunde, cârlige și ustensile. Perfectă pentru jocul de-a gătitul."
+    }
+  ]
+}

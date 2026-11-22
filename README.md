@@ -15,7 +15,7 @@ npm run preview
 |---|---|
 | **Numărul WhatsApp** (acum e un placeholder `37300000000`) | `src/config.js` → `WA_NUMBER` |
 | **Prețuri** (acum `null` → „Preț la cerere”) și **dimensiuni** (`TODO`) | `public/products.json` |
-| **Pozele reale** (acum poze-substitut SVG) | `public/img/products/` + `images` din `products.json` |
+| **Mai multe poze** (acum câte una pe produs) | `public/img/products/` + `images` din `products.json` |
 | Textul „Despre noi” (ciornă bazată pe povestea brandului) | `src/components/About.jsx` |
 
 ## products.json
@@ -44,3 +44,7 @@ Ca s-o scoți definitiv: șterge `<Offer />` din `src/App.jsx`.
 * fără shadow maps (umbre „blob”), dpr limitat la 1.5 pe touch, scade la 1 dacă FPS < 40;
 * canvasurile (hero, configurator) se opresc când nu sunt în ecran; `three` e într-un chunk separat,
   încărcat leneș; introul nu se descarcă deloc pentru vizitatorii care l-au văzut deja.
+
+## Publicare (GitHub Pages)
+
+La fiecare push pe `main`, workflow-ul `.github/workflows/deploy.yml` compilează site-ul și pune rezultatul în rădăcina branch-ului (`index.html`, `assets/`, `img/`, `products.json`). Fișierele din rădăcină sunt generate automat: **nu le edita direct**. Editează `public/products.json`, `public/img/` și `src/`. Sursa paginii HTML este `src/index.html`.
