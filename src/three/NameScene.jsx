@@ -1,44 +1,87 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { RoundedBox } from '@react-three/drei'
 import gsap from 'gsap'
 import { Lights, Shadow } from './House'
-import { woodMaterial } from './wood'
+import { birchTextures, plyEdgeTextures } from './plywood'
 import { FONT } from './letters'
 import { maxDpr } from '../lib/hooks'
 
-const PW = 3.7, PH = 1.15, PD = 0.3
-const CW = 1024, CH = 320
+// două scânduri de placaj, una peste alta, cu numele decupat și lipit peste ele
+const PW = 3.9, PLANK_H = 0.6, GAP = 0.03, PD = 0.16
+const BOARD_H = PLANK_H * 2 + GAP
+const CW = 1024, CH = 300
+const LETTER_D = 0.07 // grosimea literelor decupate
+const EDGE_LAYERS = 9
+const BURNT = '#3b2415'
 
-function drawName(colorCanvas, bumpCanvas, name, color) {
-  const text = name || ' '
-  const c = colorCanvas.getContext('2d')
-  const b = bumpCanvas.getContext('2d')
-  c.clearRect(0, 0, CW, CH)
-  b.fillStyle = '#fff'
-  b.fillRect(0, 0, CW, CH)
-  let fs = 250
-  c.font = `700 ${fs}px ${FONT}`
-  const w = c.measureText(text).width
-  const maxW = CW * 0.92
+function fitFont(g, text) {
+  let fs = 240
+  g.font = `700 ${fs}px ${FONT}`
+  const w = g.measureText(text).width
+  const maxW = CW * 0.9
   if (w > maxW) fs = Math.floor((fs * maxW) / w)
-  for (const g of [c, b]) {
-    g.font = `700 ${fs}px ${FONT}`
-    g.textAlign = 'center'
-    g.textBaseline = 'middle'
-  }
+  return fs
+}
+
+/** mască albă pe negru (forma literelor) + umbra lor de contact pe lemn */
+function drawName(mask, shadow, name) {
+  const text = name || ' '
+  const m = mask.getContext('2d')
+  const sh = shadow.getContext('2d')
+  const fs = fitFont(m, text)
   const cy = CH / 2 + fs * 0.04
-  // relief: litere „scobite”
-  b.shadowColor = '#000'
-  b.shadowBlur = 10
-  b.fillStyle = '#000'
-  b.fillText(text, CW / 2, cy)
-  // marginea întunecată (adâncitura) + culoarea
-  c.fillStyle = 'rgba(30,15,0,0.55)'
-  c.fillText(text, CW / 2 - 3, cy - 4)
-  c.fillStyle = color
-  c.fillText(text, CW / 2, cy)
+  m.fillStyle = '#000'
+  m.fillRect(0, 0, CW, CH)
+  m.font = `700 ${fs}px ${FONT}`
+  m.textAlign = 'center'
+  m.textBaseline = 'middle'
+  m.fillStyle = '#fff'
+  m.fillText(text, CW / 2, cy)
+  sh.clearRect(0, 0, CW, CH)
+  sh.font = m.font
+  sh.textAlign = 'center'
+  sh.textBaseline = 'middle'
+  sh.filter = 'blur(9px)'
+  sh.fillStyle = 'rgba(40,22,8,0.75)'
+  sh.fillText(text, CW / 2 + 6, cy + 10)
+  sh.filter = 'none'
+}
+
+function Plank({ y, half, mats }) {
+  const front = useMemo(() => {
+    const m = mats.face.clone()
+    m.map = mats.birch.map.clone()
+    m.normalMap = mats.birch.normalMap.clone()
+    for (const t of [m.map, m.normalMap]) {
+      t.repeat.set(1, PLANK_H / BOARD_H)
+      t.offset.set(0, half ? (PLANK_H + GAP) / BOARD_H : 0)
+      t.needsUpdate = true
+    }
+    return m
+  }, [half, mats])
+  // ordinea fețelor la BoxGeometry: +x, -x, +y, -y, +z (față), -z (spate)
+  const material = useMemo(() => [mats.side, mats.side, mats.top, mats.top, front, front], [front, mats])
+  return (
+    <mesh position={[0, y, 0]} material={material}>
+      <boxGeometry args={[PW, PLANK_H, PD]} />
+    </mesh>
+  )
+}
+
+function Screw({ x, y }) {
+  return (
+    <group position={[x, y, PD / 2]} rotation={[Math.PI / 2, 0, 0]}>
+      <mesh>
+        <cylinderGeometry args={[0.045, 0.05, 0.02, 20]} />
+        <meshStandardMaterial color="#cfcfcf" metalness={0.55} roughness={0.3} />
+      </mesh>
+      <mesh position={[0, 0.011, 0]} rotation={[0, Math.PI / 4, 0]}>
+        <boxGeometry args={[0.065, 0.004, 0.012]} />
+        <meshStandardMaterial color="#5c5c5c" />
+      </mesh>
+    </group>
+  )
 }
 
 function Plaque({ name, color, reduced }) {
@@ -46,17 +89,40 @@ function Plaque({ name, color, reduced }) {
   const { camera, size } = useThree()
   const [fontTick, setFontTick] = useState(0)
 
-  const { colorCanvas, bumpCanvas, colorTex, bumpTex } = useMemo(() => {
-    const colorCanvas = document.createElement('canvas')
-    const bumpCanvas = document.createElement('canvas')
-    colorCanvas.width = bumpCanvas.width = CW
-    colorCanvas.height = bumpCanvas.height = CH
-    const colorTex = new THREE.CanvasTexture(colorCanvas)
-    colorTex.colorSpace = THREE.SRGBColorSpace
-    colorTex.anisotropy = 4
-    const bumpTex = new THREE.CanvasTexture(bumpCanvas)
-    return { colorCanvas, bumpCanvas, colorTex, bumpTex }
+  const mats = useMemo(() => {
+    const birch = birchTextures(PW, BOARD_H)
+    const { side, top } = plyEdgeTextures()
+    return {
+      birch,
+      face: new THREE.MeshStandardMaterial({ roughness: 0.72, normalScale: new THREE.Vector2(0.35, 0.35) }),
+      side: new THREE.MeshStandardMaterial({ map: side, roughness: 0.85 }),
+      top: new THREE.MeshStandardMaterial({ map: top, roughness: 0.85 }),
+      batten: new THREE.MeshStandardMaterial({ map: birch.map, color: '#d9bf95', roughness: 0.75 }),
+    }
   }, [])
+
+  const { mask, shadow, maskTex, shadowTex } = useMemo(() => {
+    const mask = document.createElement('canvas')
+    const shadow = document.createElement('canvas')
+    mask.width = shadow.width = CW
+    mask.height = shadow.height = CH
+    const maskTex = new THREE.CanvasTexture(mask)
+    maskTex.anisotropy = 4
+    const shadowTex = new THREE.CanvasTexture(shadow)
+    shadowTex.colorSpace = THREE.SRGBColorSpace
+    return { mask, shadow, maskTex, shadowTex }
+  }, [])
+
+  const letterMats = useMemo(() => {
+    const { normalMap } = birchTextures(PW, BOARD_H)
+    const paint = new THREE.MeshStandardMaterial({ alphaMap: maskTex, alphaTest: 0.5, roughness: 0.5, normalMap, normalScale: new THREE.Vector2(0.15, 0.15) })
+    const edge = new THREE.MeshStandardMaterial({ alphaMap: maskTex, alphaTest: 0.5, color: BURNT, roughness: 0.9 })
+    return { paint, edge }
+  }, [maskTex])
+
+  useEffect(() => {
+    letterMats.paint.color.set(color)
+  }, [color, letterMats])
 
   // asigurăm fontul (cu diacritice) înainte să desenăm
   useEffect(() => {
@@ -71,10 +137,10 @@ function Plaque({ name, color, reduced }) {
   }, [name])
 
   useEffect(() => {
-    drawName(colorCanvas, bumpCanvas, name, color)
-    colorTex.needsUpdate = true
-    bumpTex.needsUpdate = true
-  }, [name, color, fontTick, colorCanvas, bumpCanvas, colorTex, bumpTex])
+    drawName(mask, shadow, name)
+    maskTex.needsUpdate = true
+    shadowTex.needsUpdate = true
+  }, [name, fontTick, mask, shadow, maskTex, shadowTex])
 
   // mică „săritură” la fiecare schimbare
   useEffect(() => {
@@ -84,9 +150,9 @@ function Plaque({ name, color, reduced }) {
 
   useEffect(() => {
     const aspect = size.width / size.height
-    const z = THREE.MathUtils.clamp((PW / 2 + 0.55) / (Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * aspect), 5, 12)
-    camera.position.set(0, 0.35, z)
-    camera.lookAt(0, 0.25, 0)
+    const z = THREE.MathUtils.clamp((PW / 2 + 0.5) / (Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * aspect), 5, 12)
+    camera.position.set(0, 0.45, z)
+    camera.lookAt(0, 0.72, 0)
     camera.updateProjectionMatrix()
   }, [camera, size])
 
@@ -100,28 +166,40 @@ function Plaque({ name, color, reduced }) {
     g.rotation.x += (-state.pointer.y * 0.12 - g.rotation.x) * 0.08
   })
 
-  const wood = useMemo(() => woodMaterial('#f0c38a'), [])
-  const stand = useMemo(() => woodMaterial('#b4824f'), [])
+  const textW = PW * 0.92
+  const textH = (textW * CH) / CW
+  const cy = PLANK_H + GAP / 2
+  const sx = PW / 2 - 0.16
+  const sy = PLANK_H / 2
 
   return (
-    <group position={[0, 0.2, 0]}>
+    <group position={[0, 0.0, 0]}>
       <group ref={group}>
-        <RoundedBox args={[PW, PH, PD]} radius={0.09} smoothness={4} material={wood} position={[0, 0.7, 0]} />
-        <mesh position={[0, 0.7, PD / 2 + 0.003]}>
-          <planeGeometry args={[PW * 0.94, (PW * 0.94 * CH) / CW]} />
-          <meshStandardMaterial
-            map={colorTex}
-            bumpMap={bumpTex}
-            bumpScale={2.2}
-            transparent
-            roughness={0.5}
-            polygonOffset
-            polygonOffsetFactor={-2}
-          />
+        <Plank y={PLANK_H / 2} half={false} mats={mats} />
+        <Plank y={PLANK_H * 1.5 + GAP} half mats={mats} />
+        {/* șipcile din spate care țin scândurile împreună */}
+        {[-1, 1].map((k) => (
+          <mesh key={k} position={[k * (PW / 2 - 0.45), cy, -PD / 2 - 0.05]} material={mats.batten}>
+            <boxGeometry args={[0.32, BOARD_H - 0.1, 0.1]} />
+          </mesh>
+        ))}
+        {[-sx, sx].flatMap((x) => [sy, sy + PLANK_H + GAP].map((y) => <Screw key={`${x}${y}`} x={x} y={y} />))}
+        {/* umbra literelor pe lemn */}
+        <mesh position={[0, cy, PD / 2 + 0.002]} renderOrder={1}>
+          <planeGeometry args={[textW, textH]} />
+          <meshBasicMaterial map={shadowTex} transparent depthWrite={false} />
         </mesh>
-        <RoundedBox args={[PW * 0.9, 0.16, 0.7]} radius={0.05} smoothness={3} material={stand} position={[0, 0.02, 0.05]} />
+        {/* literele decupate: muchie arsă de laser (straturi) + fața vopsită */}
+        {Array.from({ length: EDGE_LAYERS }, (_, i) => (
+          <mesh key={i} position={[0, cy, PD / 2 + 0.004 + (i * LETTER_D) / EDGE_LAYERS]} material={letterMats.edge}>
+            <planeGeometry args={[textW, textH]} />
+          </mesh>
+        ))}
+        <mesh position={[0, cy, PD / 2 + 0.004 + LETTER_D]} material={letterMats.paint}>
+          <planeGeometry args={[textW, textH]} />
+        </mesh>
       </group>
-      <Shadow size={5} position={[0, -0.06, 0]} opacity={0.8} />
+      <Shadow size={5.4} position={[0, -0.02, 0]} opacity={0.75} />
     </group>
   )
 }
