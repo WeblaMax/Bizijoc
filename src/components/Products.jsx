@@ -59,6 +59,7 @@ export default function Products() {
   const [open, setOpen] = useState(null)
   const grid = useRef()
   const flipState = useRef(null)
+  const flipTl = useRef(null)
   const reduced = useReducedMotion()
 
   useEffect(() => {
@@ -68,7 +69,9 @@ export default function Products() {
   const choose = useCallback(
     (id) => {
       if (id === cat) return
-      if (!reduced && grid.current) flipState.current = Flip.getState(grid.current.querySelectorAll('.card'))
+      if (!reduced && grid.current) {
+        flipState.current = { state: Flip.getState(grid.current.querySelectorAll('.card')), height: grid.current.offsetHeight }
+      }
       setCat(id)
     },
     [cat, reduced],
@@ -76,18 +79,33 @@ export default function Products() {
 
   // animația filtrelor: Flip între aranjamentul vechi și cel nou
   useLayoutEffect(() => {
-    const st = flipState.current
-    if (!st) return
+    const prev = flipState.current
+    if (!prev) return
     flipState.current = null
-    Flip.from(st, {
+    // Flip scoate cardurile din flux (absolute), deci grila și-ar pierde înălțimea și secțiunea de dedesubt ar urca peste ea
+    const el = grid.current
+    flipTl.current?.kill()
+    gsap.killTweensOf(el)
+    gsap.set(el, { clearProps: 'height,overflow' })
+    const to = el.offsetHeight
+    if (to < prev.height) {
+      gsap.set(el, { height: prev.height, overflow: 'clip' })
+      gsap.to(el, { height: to, duration: 0.4, delay: 0.25, ease: 'power2.inOut' })
+    } else {
+      gsap.set(el, { height: to })
+    }
+    flipTl.current = Flip.from(prev.state, {
       duration: 0.55,
       ease: 'power2.inOut',
       absolute: true,
       scale: true,
       stagger: 0.025,
       onEnter: (els) => gsap.fromTo(els, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.45, delay: 0.15, ease: 'back.out(1.5)' }),
-      onLeave: (els) => gsap.to(els, { opacity: 0, scale: 0.6, duration: 0.3 }),
-      onComplete: () => ScrollTrigger.refresh(),
+      onLeave: (els) => gsap.to(els, { opacity: 0, scale: 0.6, duration: 0.25 }),
+      onComplete: () => {
+        gsap.set(el, { clearProps: 'height,overflow' })
+        ScrollTrigger.refresh()
+      },
     })
   }, [cat])
 
