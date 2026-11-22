@@ -1,4 +1,4 @@
-import { getWood } from '../three/wood'
+import { birchTextures, HOUSE_WOOD } from '../three/plywood'
 
 let productsPromise
 export function loadProducts() {
@@ -29,9 +29,9 @@ export async function preloadAssets(progressRef) {
   }
   progressRef.current = 0
 
-  // 1. lemn PBR (generat procedural – ia câteva zeci de ms)
+  // 1. placajul de mesteacăn (generat procedural, o singură dată)
   await tick()
-  getWood()
+  birchTextures(HOUSE_WOOD, HOUSE_WOOD, 640)
   bump()
 
   // 2. fonturi (cu diacritice românești)

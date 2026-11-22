@@ -1,7 +1,8 @@
-import { useMemo, useLayoutEffect, useRef } from 'react'
+import { useMemo } from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
-import { woodMaterial, paintMaterial, blobShadowTexture } from './wood'
+import { blobShadowTexture } from './wood'
+import { birchMaterial, burntMaterial, paintedMaterial, birchTextures, HOUSE_WOOD } from './plywood'
 import { BRAND, LETTERS, letterTexture } from './letters'
 
 // ── dimensiuni căsuță (unități de scenă) ──
@@ -9,33 +10,19 @@ export const W = 2.4 // lățime (x)
 export const D = 2.0 // adâncime (z)
 export const WALL_H = 1.4
 export const PEAK = 0.85 // înălțimea frontonului peste pereți
-const T = 0.1 // grosime perete
+const T = 0.09 // grosimea placajului
+const E = 0.002 // distanța minimă între piese lipite, ca fețele să nu se bată între ele (z-fighting)
 
 // semnul „BIZI” de deasupra acoperișului
 export const SIGN_Y = WALL_H + PEAK + 0.62
 export const SIGN_S = 0.5
 export const SIGN_GAP = 0.06
 
-function scaleUV(geo, s) {
-  const uv = geo.attributes.uv
-  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * s, uv.getY(i) * s)
-  return geo
-}
-const extrude = (shape, depth, bevel = 0.012) =>
-  scaleUV(
-    new THREE.ExtrudeGeometry(shape, {
-      depth,
-      bevelEnabled: bevel > 0,
-      bevelThickness: bevel,
-      bevelSize: bevel,
-      bevelSegments: 2,
-      curveSegments: 14,
-    }),
-    0.5,
-  )
+// placaj tăiat cu laser: muchii drepte, fără teșire
+const cut = (shape, depth = T) => new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false, curveSegments: 20 })
 
-function doorPath(w = 0.35, h = 0.7) {
-  const p = new THREE.Path()
+function arch(w, h) {
+  const p = new THREE.Shape()
   p.moveTo(-w, 0)
   p.lineTo(w, 0)
   p.lineTo(w, h)
@@ -43,6 +30,8 @@ function doorPath(w = 0.35, h = 0.7) {
   p.lineTo(-w, 0)
   return p
 }
+const archHole = (w, h) => new THREE.Path(arch(w, h).getPoints(40).reverse())
+
 function gableShape() {
   const s = new THREE.Shape()
   s.moveTo(-W / 2, 0)
@@ -53,12 +42,10 @@ function gableShape() {
   s.lineTo(-W / 2, 0)
   return s
 }
-function ringShape(outerR, innerR) {
+function ring(outerR, innerR) {
   const s = new THREE.Shape()
   s.absarc(0, 0, outerR, 0, Math.PI * 2, false)
-  const h = new THREE.Path()
-  h.absarc(0, 0, innerR, 0, Math.PI * 2, true)
-  s.holes.push(h)
+  s.holes.push(new THREE.Path().absarc(0, 0, innerR, 0, Math.PI * 2, true))
   return s
 }
 function rectRing(ow, oh, iw, ih) {
@@ -69,73 +56,93 @@ function rectRing(ow, oh, iw, ih) {
   s.holes.push(h)
   return s
 }
-
-/** Definește toate piesele căsuței. Ordinea = ordinea de asamblare din intro. */
-function buildPieces() {
-  const wood = woodMaterial('#ffffff')
-  const woodWarm = woodMaterial('#f3c488')
-  const floorWood = woodMaterial('#b9855a')
-  const red = paintMaterial(BRAND.red)
-  const blue = paintMaterial(BRAND.blue)
-  const yellow = paintMaterial(BRAND.yellow)
-
-  // fațadă: fronton cu ușă arcuită și ochi-de-bou
-  const front = gableShape()
-  const door = doorPath(0.36, 0.68)
-  front.holes.push(door)
-  const oculus = new THREE.Path()
-  oculus.absarc(0, WALL_H + 0.28, 0.17, 0, Math.PI * 2, true)
-  front.holes.push(oculus)
-
-  const back = gableShape()
-
-  const side = new THREE.Shape()
-  side.moveTo(-D / 2, 0); side.lineTo(D / 2, 0); side.lineTo(D / 2, WALL_H); side.lineTo(-D / 2, WALL_H); side.lineTo(-D / 2, 0)
-  const win = new THREE.Path()
-  win.moveTo(-0.26, 0.62); win.lineTo(-0.26, 1.12); win.lineTo(0.26, 1.12); win.lineTo(0.26, 0.62); win.lineTo(-0.26, 0.62)
-  side.holes.push(win)
-
-  const slope = Math.atan2(PEAK, W / 2)
-  const slopeLen = Math.hypot(W / 2, PEAK) + 0.2
-  const nrm = new THREE.Vector2(Math.sin(slope), Math.cos(slope)) // normala pantei dreapta
-  const roofCx = W / 4, roofCy = WALL_H + PEAK / 2
-  const roofGeo = scaleUV(new THREE.BoxGeometry(slopeLen, 0.1, D + 0.34), 1)
-
-  // ringuri ferestre (rama colorată), pe peretele lateral → coordonate locale (z,y)
-  const winFrame = extrude(rectRing(0.66, 0.66, 0.5, 0.5), 0.05, 0.006)
-
-  return [
-    { key: 'floor', geo: scaleUV(new THREE.BoxGeometry(W + 0.1, 0.1, D + 0.1), 0.6), mat: floorWood, pos: [0, -0.05, 0] },
-    { key: 'back', geo: extrude(back, T), mat: wood, pos: [0, 0, -D / 2] },
-    { key: 'left', geo: extrude(side, T), mat: woodWarm, pos: [-W / 2 + T, 0, 0], rot: [0, -Math.PI / 2, 0] },
-    { key: 'right', geo: extrude(side, T), mat: woodWarm, pos: [W / 2 - T, 0, 0], rot: [0, Math.PI / 2, 0] },
-    { key: 'front', geo: extrude(front, T), mat: wood, pos: [0, 0, D / 2 - T] },
-    { key: 'winL', geo: winFrame, mat: blue, pos: [-W / 2 - 0.05, 0.87, 0], rot: [0, -Math.PI / 2, 0] },
-    { key: 'winR', geo: winFrame, mat: yellow, pos: [W / 2 + 0.05, 0.87, 0], rot: [0, Math.PI / 2, 0] },
-    { key: 'doorFrame', geo: extrude(doorFrameShape(), 0.06, 0.008), mat: blue, pos: [0, 0, D / 2] },
-    { key: 'oculus', geo: extrude(ringShape(0.25, 0.17), 0.05, 0.006), mat: yellow, pos: [0, WALL_H + 0.28, D / 2] },
-    {
-      key: 'roofL', geo: roofGeo, mat: red,
-      pos: [-roofCx - nrm.x * 0.06, roofCy + nrm.y * 0.06, 0], rot: [0, 0, slope],
-    },
-    {
-      key: 'roofR', geo: roofGeo, mat: red,
-      pos: [roofCx + nrm.x * 0.06, roofCy + nrm.y * 0.06, 0], rot: [0, 0, -slope],
-    },
-    { key: 'ridge', geo: new THREE.BoxGeometry(0.16, 0.14, D + 0.34), mat: yellow, pos: [0, WALL_H + PEAK + 0.08, 0] },
-    { key: 'chimney', geo: scaleUV(new THREE.BoxGeometry(0.26, 0.7, 0.26), 1), mat: blue, pos: [0.62, WALL_H + 0.45, -0.35] },
-  ]
-}
-function doorFrameShape() {
+function polygon(n, r, rot = -Math.PI / 2) {
   const s = new THREE.Shape()
-  const w = 0.46, h = 0.68
-  s.moveTo(-w, 0); s.lineTo(w, 0); s.lineTo(w, h); s.absarc(0, h, w, 0, Math.PI, false); s.lineTo(-w, 0)
-  s.holes.push(doorPath(0.34, 0.68))
+  for (let i = 0; i <= n; i++) {
+    const a = rot + (i * Math.PI * 2) / n
+    i ? s.lineTo(Math.cos(a) * r, Math.sin(a) * r) : s.moveTo(Math.cos(a) * r, Math.sin(a) * r)
+  }
+  return s
+}
+function star(R, r) {
+  const s = new THREE.Shape()
+  for (let i = 0; i <= 10; i++) {
+    const a = -Math.PI / 2 + (i * Math.PI) / 5
+    const k = i % 2 ? r : R
+    i ? s.lineTo(Math.cos(a) * k, Math.sin(a) * k) : s.moveTo(Math.cos(a) * k, Math.sin(a) * k)
+  }
   return s
 }
 
+const DOOR_W = 0.34, DOOR_H = 0.66
+
+/** Toate piesele căsuței; fiecare piesă de placaj are fața din mesteacăn și muchia arsă. */
+function buildPieces() {
+  const ply = [birchMaterial(), burntMaterial()]
+  const paint = (c) => [paintedMaterial(c), burntMaterial()]
+
+  const front = gableShape()
+  front.holes.push(archHole(DOOR_W, DOOR_H))
+  front.holes.push(new THREE.Path().absarc(0, WALL_H + 0.3, 0.16, 0, Math.PI * 2, true))
+
+  // pereții laterali stau între fațadă și spate (nu se suprapun cu ele)
+  const sd = D / 2 - T
+  const side = new THREE.Shape()
+  side.moveTo(-sd, 0); side.lineTo(sd, 0); side.lineTo(sd, WALL_H); side.lineTo(-sd, WALL_H); side.lineTo(-sd, 0)
+  const win = new THREE.Path()
+  win.moveTo(-0.25, 0.62); win.lineTo(-0.25, 1.1); win.lineTo(0.25, 1.1); win.lineTo(0.25, 0.62); win.lineTo(-0.25, 0.62)
+  side.holes.push(win)
+
+  const slope = Math.atan2(PEAK, W / 2)
+  const slopeLen = Math.hypot(W / 2, PEAK) + 0.16
+  const nrm = new THREE.Vector2(Math.sin(slope), Math.cos(slope))
+  const roofCx = W / 4 + 0.03, roofCy = WALL_H + PEAK / 2 - 0.02
+  const RT = 0.07
+  const roofGeo = new THREE.BoxGeometry(slopeLen, RT, D + 0.3)
+
+  const frameSq = cut(rectRing(0.62, 0.62, 0.5, 0.48), 0.035)
+  const doorFrame = arch(DOOR_W + 0.09, DOOR_H)
+  doorFrame.holes.push(archHole(DOOR_W + 0.005, DOOR_H))
+
+  // decor pe fațadă: formele din logo, decupate și vopsite
+  const deco = 0.035
+  return [
+    { key: 'floor', geo: new THREE.BoxGeometry(W + 0.3, 0.08, D + 0.3), mat: [burntMaterial(), burntMaterial(), birchMaterial(1, 0), burntMaterial(), burntMaterial(), burntMaterial()], pos: [0, -0.04, 0] },
+    { key: 'back', geo: cut(gableShape()), mat: ply, pos: [0, 0, -D / 2] },
+    { key: 'left', geo: cut(side), mat: ply, pos: [-W / 2 + T, 0, 0], rot: [0, -Math.PI / 2, 0] },
+    { key: 'right', geo: cut(side), mat: ply, pos: [W / 2 - T, 0, 0], rot: [0, Math.PI / 2, 0] },
+    { key: 'front', geo: cut(front), mat: ply, pos: [0, 0, D / 2 - T] },
+    { key: 'winL', geo: frameSq, mat: paint(BRAND.blue), pos: [-W / 2 - E, 0.86, 0], rot: [0, -Math.PI / 2, 0] },
+    { key: 'winR', geo: frameSq, mat: paint(BRAND.yellow), pos: [W / 2 + E, 0.86, 0], rot: [0, Math.PI / 2, 0] },
+    { key: 'doorFrame', geo: cut(doorFrame, 0.035), mat: paint(BRAND.blue), pos: [0, 0, D / 2 + E] },
+    { key: 'oculus', geo: cut(ring(0.24, 0.165), 0.035), mat: paint(BRAND.yellow), pos: [0, WALL_H + 0.3, D / 2 + E] },
+    { key: 'tri', geo: cut(polygon(3, 0.15), deco), mat: paint(BRAND.green), pos: [-0.78, 1.05, D / 2 + E] },
+    { key: 'star', geo: cut(star(0.15, 0.065), deco), mat: paint(BRAND.yellow), pos: [-0.78, 0.55, D / 2 + E] },
+    { key: 'pent', geo: cut(polygon(5, 0.14), deco), mat: paint(BRAND.blue), pos: [0.78, 1.05, D / 2 + E] },
+    { key: 'dot', geo: cut(polygon(40, 0.13), deco), mat: paint(BRAND.red), pos: [0.78, 0.55, D / 2 + E] },
+    { key: 'roofL', geo: roofGeo, mat: paintedMaterial('#d9483f', 0.58), pos: [-roofCx - nrm.x * (RT / 2 + E), roofCy + nrm.y * (RT / 2 + E), 0], rot: [0, 0, slope] },
+    { key: 'roofR', geo: roofGeo, mat: paintedMaterial('#d9483f', 0.58), pos: [roofCx + nrm.x * (RT / 2 + E), roofCy + nrm.y * (RT / 2 + E), 0], rot: [0, 0, -slope] },
+    { key: 'chimney', geo: new THREE.BoxGeometry(0.24, 0.7, 0.24), mat: paintedMaterial(BRAND.blue), pos: [0.62, WALL_H + 0.42, -0.4] },
+  ]
+}
+
 let piecesCache
-export const getPieces = () => (piecesCache ??= buildPieces())
+const getPieces = () => (piecesCache ??= buildPieces())
+
+/** ușa: vopsită, întredeschisă pe balamale, cu mâner metalic */
+function Door() {
+  const geo = useMemo(() => cut(arch(DOOR_W - 0.01, DOOR_H - 0.01), 0.04), [])
+  const mat = useMemo(() => [paintedMaterial(BRAND.blue), burntMaterial()], [])
+  return (
+    <group position={[-DOOR_W, 0.005, D / 2 + E]} rotation={[0, -1.05, 0]}>
+      <mesh geometry={geo} material={mat} position={[DOOR_W, 0, 0]} />
+      <mesh position={[2 * DOOR_W - 0.09, 0.42, 0.06]}>
+        <sphereGeometry args={[0.035, 16, 12]} />
+        <meshStandardMaterial color="#c9c9c9" metalness={0.8} roughness={0.3} />
+      </mesh>
+    </group>
+  )
+}
 
 export function Shadow({ size = 4, opacity = 0.9, position = [0, 0.005, 0], ref }) {
   const tex = useMemo(() => blobShadowTexture(), [])
@@ -159,26 +166,32 @@ export function Lights({ interior = true }) {
   )
 }
 
-/** Cub cu literă (pentru semnul BIZI) */
-export function LetterCube({ letter, color, size = 1, decal = true, ref, ...props }) {
-  const mat = useMemo(() => woodMaterial('#ffffff'), [])
+/** Cub de mesteacăn cu literă pictată (pentru semnul BIZI) */
+function LetterCube({ letter, color, size = 1, ...props }) {
+  const mat = useMemo(() => {
+    const { map, normalMap } = birchTextures(HOUSE_WOOD, HOUSE_WOOD, 640)
+    const m = new THREE.MeshStandardMaterial({ map: map.clone(), normalMap: normalMap.clone(), normalScale: new THREE.Vector2(0.3, 0.3), roughness: 0.72 })
+    for (const t of [m.map, m.normalMap]) {
+      t.repeat.set(0.3, 0.3)
+      t.needsUpdate = true
+    }
+    return m
+  }, [])
   const tex = useMemo(() => letterTexture(letter, color), [letter, color])
   return (
-    <group ref={ref} {...props}>
-      <RoundedBox args={[size, size, size]} radius={size * 0.1} smoothness={3} material={mat} />
-      {decal && (
-        <mesh position={[0, 0, size / 2 + 0.002]}>
-          <planeGeometry args={[size * 0.86, size * 0.86]} />
-          <meshStandardMaterial map={tex} transparent roughness={0.6} polygonOffset polygonOffsetFactor={-2} />
-        </mesh>
-      )}
+    <group {...props}>
+      <RoundedBox args={[size, size, size]} radius={size * 0.06} smoothness={3} material={mat} />
+      <mesh position={[0, 0, size / 2 + 0.004]}>
+        <planeGeometry args={[size * 0.86, size * 0.86]} />
+        <meshStandardMaterial map={tex} transparent roughness={0.6} polygonOffset polygonOffsetFactor={-4} />
+      </mesh>
     </group>
   )
 }
 
 /** Semnul BIZI: 4 cuburi mici, deasupra acoperișului */
 export function Sign(props) {
-  const step = (1 + SIGN_GAP)
+  const step = 1 + SIGN_GAP
   return (
     <group position={[0, SIGN_Y, 0]} scale={SIGN_S} {...props}>
       {LETTERS.map((l, i) => (
@@ -188,29 +201,14 @@ export function Sign(props) {
   )
 }
 
-/**
- * Căsuța completă. `onPieces(groups)` primește grupurile pieselor
- * (cu `userData.rest`), ca introul să le poată anima.
- */
-export function House({ onPieces, shadow = true, ...props }) {
+export function House({ shadow = true, ...props }) {
   const pieces = getPieces()
-  const refs = useRef([])
-  useLayoutEffect(() => {
-    const groups = refs.current.filter(Boolean)
-    groups.forEach((g) => {
-      g.userData.rest = { p: g.position.clone(), r: g.rotation.clone() }
-    })
-    onPieces?.(groups)
-  }, [onPieces])
   return (
     <group {...props}>
-      {pieces.map((p, i) => (
-        <group key={p.key} ref={(el) => {
-            refs.current[i] = el
-          }} position={p.pos} rotation={p.rot ?? [0, 0, 0]} name={p.key}>
-          <mesh geometry={p.geo} material={p.mat} />
-        </group>
+      {pieces.map((p) => (
+        <mesh key={p.key} geometry={p.geo} material={p.mat} position={p.pos} rotation={p.rot ?? [0, 0, 0]} />
       ))}
+      <Door />
       {shadow && <Shadow size={5.2} position={[0, 0.003, 0]} />}
     </group>
   )
