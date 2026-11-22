@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
-  <rect width="800" height="600" fill="#E6F2FB"/>
-  <ellipse cx="400" cy="510" rx="230" ry="26" fill="#000" opacity=".12"/>
-  
-  <g transform="translate(300 120)"><rect width="220" height="220" rx="26.4" fill="#E8C48B" stroke="#8B5E34" stroke-width="5"/>
-  <text x="110" y="158.4" font-family="Arial Rounded MT Bold,Arial,sans-serif" font-weight="800" font-size="136.4" text-anchor="middle" fill="#E63946">B</text></g>
-  <text x="400" y="575" font-family="Arial,sans-serif" font-size="22" text-anchor="middle" fill="#8B5E34" opacity=".7">poză în curând</text>
-</svg>

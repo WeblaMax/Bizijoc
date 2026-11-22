@@ -20,7 +20,7 @@ npm run preview
 
 ## products.json
 
-Fiecare produs: `id`, `name`, `category` (`casute` · `cuburi` · `placi` · `garaje` · `fructe`),
+Fiecare produs: `id`, `name`, `category` (`casute` · `cuburi` · `garaje` · `bucatarii`),
 `dimensions`, `price` (număr în lei, sau `null` pentru „Preț la cerere”), `images` (prima = card,
 a doua = la hover), `description`. Cardurile, filtrele și modalul se construiesc automat.
 Prețul apare ca „de la X lei”. Moneda se schimbă în `src/config.js` (`CURRENCY`).
